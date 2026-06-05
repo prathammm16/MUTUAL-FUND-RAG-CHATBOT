@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mutual Fund FAQ Assistant - Advisory Refusal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #0b0f14;
+        }
+        .amber-glow {
+            box-shadow: 0 0 40px -10px rgba(255, 176, 0, 0.15);
+        }
+        .green-bloom {
+            box-shadow: 0 0 30px 0px rgba(0, 208, 156, 0.2);
+        }
+        .glass-card {
+            background: rgba(26, 34, 45, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#0a0e13",
+                      "on-secondary-container": "#b1b9c7",
+                      "primary-fixed-dim": "#2fe0aa",
+                      "primary-fixed": "#59fdc5",
+                      "background": "#101419",
+                      "on-secondary-fixed-variant": "#3f4753",
+                      "secondary-fixed-dim": "#bfc7d6",
+                      "on-background": "#e0e2ea",
+                      "on-primary-fixed": "#002116",
+                      "surface-container-low": "#181c21",
+                      "on-tertiary-fixed-variant": "#3e4854",
+                      "tertiary-container": "#aeb8c7",
+                      "error": "#ffb4ab",
+                      "surface-dim": "#101419",
+                      "secondary": "#bfc7d6",
+                      "on-secondary": "#29313c",
+                      "on-tertiary": "#27313d",
+                      "on-primary-container": "#00533c",
+                      "secondary-fixed": "#dbe3f2",
+                      "outline-variant": "#3c4a43",
+                      "on-error": "#690005",
+                      "inverse-on-surface": "#2d3136",
+                      "outline": "#85948c",
+                      "surface-tint": "#2fe0aa",
+                      "surface": "#101419",
+                      "tertiary-fixed": "#d9e3f3",
+                      "primary-container": "#00d09c",
+                      "on-tertiary-fixed": "#121c27",
+                      "on-surface": "#e0e2ea",
+                      "secondary-container": "#424a56",
+                      "surface-container-highest": "#31353b",
+                      "on-secondary-fixed": "#141c27",
+                      "tertiary": "#cad4e3",
+                      "inverse-surface": "#e0e2ea",
+                      "primary": "#44edb7",
+                      "surface-container": "#1c2025",
+                      "error-container": "#93000a",
+                      "inverse-primary": "#006c4f",
+                      "surface-variant": "#31353b",
+                      "on-primary": "#003828",
+                      "on-surface-variant": "#bacac1",
+                      "on-primary-fixed-variant": "#00513b",
+                      "surface-bright": "#36393f",
+                      "surface-container-high": "#262a30",
+                      "on-error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#bdc7d7",
+                      "on-tertiary-container": "#3f4955"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "unit": "4px",
+                      "container-max-width": "1200px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "40px"
+              },
+              "fontFamily": {
+                      "headline-xl": ["Geist"],
+                      "label-md": ["Geist"],
+                      "headline-lg": ["Geist"],
+                      "headline-md": ["Geist"],
+                      "body-md": ["Geist"],
+                      "headline-lg-mobile": ["Geist"],
+                      "body-lg": ["Geist"]
+              },
+              "fontSize": {
+                      "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl docked full-width top-0 sticky border-b border-white/10 shadow-sm flex justify-between items-center w-full px-margin-desktop py-4 z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-headline-md" data-icon="account_balance_wallet">account_balance_wallet</span>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Mutual Fund FAQ Assistant</h1>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-8">
+<a class="font-label-md text-label-md text-primary font-bold transition-colors" href="#">Assistant</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Resources</a>
+</nav>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-colors" data-icon="info">info</span>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full w-72 bg-surface-container-low docked left-0 p-gutter shadow-lg shrink-0">
+<div class="mb-8">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Supported Topics</h2>
+<p class="font-label-md text-label-md text-on-secondary-container">Source Verification Status</p>
+</div>
+<nav class="flex flex-col gap-2 flex-1">
+<div class="flex items-center gap-3 p-3 rounded-lg text-on-secondary-container hover:bg-white/5 transition-all duration-300 group cursor-pointer">
+<span class="material-symbols-outlined group-hover:text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Expense Ratio</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg text-on-secondary-container hover:bg-white/5 transition-all duration-300 group cursor-pointer">
+<span class="material-symbols-outlined group-hover:text-primary" data-icon="exit_to_app">exit_to_app</span>
+<span class="font-label-md text-label-md">Exit Load</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg text-on-secondary-container hover:bg-white/5 transition-all duration-300 group cursor-pointer">
+<span class="material-symbols-outlined group-hover:text-primary" data-icon="trending_up">trending_up</span>
+<span class="font-label-md text-label-md">Minimum SIP</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg text-on-secondary-container hover:bg-white/5 transition-all duration-300 group cursor-pointer">
+<span class="material-symbols-outlined group-hover:text-primary" data-icon="gavel">gavel</span>
+<span class="font-label-md text-label-md">Taxation</span>
+</div>
+</nav>
+<div class="pt-6 mt-6 border-t border-white/5 flex flex-col gap-4">
+<button class="w-full py-3 px-4 bg-primary text-on-primary font-bold rounded-lg transition-all duration-200 active:opacity-80">
+                    Verify Sources
+                </button>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3 p-3 text-on-secondary-container hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-secondary-container hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="font-label-md text-label-md">Support</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto relative">
+<div class="max-w-[800px] mx-auto px-margin-mobile md:px-0 py-12 flex flex-col gap-8">
+<!-- User Question Section -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="person">person</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">User Question</span>
+</div>
+<div class="glass-card p-6 rounded-xl">
+<h2 class="font-headline-md text-headline-md text-on-surface">"Which mutual fund is best?"</h2>
+</div>
+</div>
+<!-- Refusal Response Card (The Anchor) -->
+<div class="flex flex-col gap-4 relative group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="smart_toy">smart_toy</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Assistant Response</span>
+</div>
+<div class="relative amber-glow glass-card rounded-xl border-l-4 border-l-[#FFB000] p-8 flex flex-col gap-6 overflow-hidden">
+<!-- Background Accent Glow -->
+<div class="absolute -right-20 -top-20 w-40 h-40 bg-[#FFB000] opacity-5 blur-[80px] pointer-events-none"></div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-[#FFB000] text-[32px] shrink-0" data-icon="warning">warning</span>
+<div class="flex flex-col gap-3">
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                                    We can only provide factual information from official sources and <span class="text-[#FFB000] font-semibold">cannot provide investment advice, recommendations, or comparisons.</span>
+</p>
+<p class="font-body-md text-body-md text-on-surface-variant italic">
+                                    Our data processing is strictly limited to regulatory disclosures and fund house documentation to ensure 100% factual accuracy.
+                                </p>
+</div>
+</div>
+<!-- Verified Source Badge -->
+<div class="flex items-center gap-2 bg-[#00D09C]/15 border border-[#00D09C]/30 self-start px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[#00D09C] text-sm" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[#00D09C] font-label-md text-xs uppercase tracking-wider">Compliance Protocol Active</span>
+</div>
+<div class="h-px bg-white/5 w-full"></div>
+<div class="flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest text-[10px]">Alternative Resource</span>
+<span class="font-body-md text-body-md text-on-surface">Explore AMFI's investor guidance modules.</span>
+</div>
+<button class="green-bloom bg-primary-container text-on-primary-container font-bold px-6 py-4 rounded-lg flex items-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98]">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+                                Learn from AMFI Investor Education
+                            </button>
+</div>
+</div>
+</div>
+<!-- Bento Grid Extra Info -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="md:col-span-2 glass-card p-6 rounded-xl flex flex-col gap-4 border-white/5">
+<span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Our Data Policy</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">We ingest real-time data from SEBI-registered fund houses. While we can provide historical performance and expense ratios, identifying the "best" fund is a subjective investment decision.</p>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col gap-4 border-white/5 justify-between">
+<div>
+<span class="material-symbols-outlined text-[#FFB000]" data-icon="balance">balance</span>
+<h3 class="font-label-md text-label-md text-on-surface mt-2">SEBI Guidelines</h3>
+</div>
+<p class="text-[12px] text-on-surface-variant leading-tight">Investment advice requires a specific registration under SEBI (Investment Advisers) Regulations, 2013.</p>
+</div>
+</div>
+<!-- Visual Element -->
+<div class="relative w-full h-[240px] rounded-2xl overflow-hidden glass-card">
+<img alt="Investment research environment" class="w-full h-full object-cover opacity-50 mix-blend-luminosity" data-alt="A cinematic, high-end 3D render of a futuristic financial research terminal set in a dark, moody environment. Translucent glass panels float in the air, displaying intricate data visualizations, glowing line charts in neon green, and complex financial matrices. The lighting is sophisticated, with soft teal and green luminescent glows reflecting off dark metallic surfaces. The atmosphere is professional, analytical, and technologically advanced, echoing a premium corporate AI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaQexzGIa6H9wUfVqW3u6qDN2zoLiYkOt--o1XaW2gRC7R9Q-k93Rlo45ptvANVw9Jdz9_IzE9GR-gUnkHPogNk51Zf9LxfynbqQi8rq-kkuSYvGqxLXaVLv_AyEyIn4E-h0fJ0ubUSGtqd5OsE7WUmVo72Qr5Zp_GDcytcHTeg-CAO8hOV4g0lxvRFC4TyMFl4DteaFQOK5g-_KmhttT4-Yak0ninqHjEys4MyV2yLdZm968Y2zapbWsSyUGGdxshfMn9XK8uA0oO"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6">
+<p class="font-headline-md text-headline-md text-white/90">Factual Integrity Above All.</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="w-full py-8 px-margin-desktop flex flex-col items-center gap-4 bg-surface-container-lowest border-t border-white/5 z-50">
+<div class="flex gap-8">
+<a class="font-label-md text-label-md text-on-tertiary-fixed-variant hover:text-on-surface transition-colors" href="#">Compliance Disclaimer</a>
+<a class="font-label-md text-label-md text-on-tertiary-fixed-variant hover:text-on-surface transition-colors" href="#">Source Information</a>
+<a class="font-label-md text-label-md text-on-tertiary-fixed-variant hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-center max-w-2xl">
+            © 2024 Mutual Fund FAQ Assistant. All rights reserved. Data sourced from SEBI-registered fund houses.
+        </p>
+</footer>
+<script>
+        // Micro-interaction for search focus and hover effects
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+</body></html>

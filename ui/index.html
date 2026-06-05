@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Groww Chatbot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <div class="sidebar-backdrop md-hidden" id="sidebar-backdrop" aria-hidden="true" tabindex="-1"></div>
+    <aside class="sidebar" id="sidebar" aria-label="Navigation">
+      <div class="sidebar-top-row md-hidden">
+        <span class="sidebar-drawer-title">Menu</span>
+        <button type="button" class="sidebar-close-btn" id="sidebar-close" aria-label="Close menu">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <header class="sidebar-header">
+        <div class="sidebar-brand">
+          <img src="/assets/groww-logo.png" alt="Groww" class="brand-logo" width="36" height="36" />
+          <span class="sidebar-title">Groww Chatbot</span>
+        </div>
+        <p class="sidebar-tagline">Factual intelligence for five HDFC schemes on Groww.</p>
+      </header>
+
+      <button type="button" class="new-chat-primary" id="new-chat-btn">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        New Chat
+      </button>
+
+      <section class="sidebar-section" aria-label="Chat history">
+        <h2 class="sidebar-section-label">History</h2>
+        <ul class="chat-list" id="chat-list"></ul>
+      </section>
+
+      <section class="sidebar-section sidebar-section-funds" aria-label="Supported funds">
+        <h2 class="sidebar-section-label sidebar-section-label--icon">
+          <span class="material-symbols-outlined" aria-hidden="true">bar_chart</span>
+          Supported funds
+        </h2>
+        <ul class="fund-list" id="scheme-list"></ul>
+      </section>
+    </aside>
+
+    <div class="main-column">
+      <header class="topbar">
+        <button type="button" class="menu-btn md-hidden" id="menu-toggle" aria-label="Open menu">
+          <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+        </button>
+        <div class="topbar-brand">
+          <img src="/assets/groww-logo.png" alt="Groww" class="brand-logo brand-logo--topbar" width="32" height="32" />
+          <h1 class="topbar-title">Groww Chatbot</h1>
+        </div>
+        <button type="button" class="new-chat-btn new-chat-btn--mobile md-hidden" id="new-chat-btn-mobile" title="New chat">
+          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        </button>
+        <span class="status-pill" id="api-status" title="API health">Checking…</span>
+      </header>
+
+      <div class="disclaimer-bar" role="note">
+        <span class="material-symbols-outlined disclaimer-icon" aria-hidden="true">warning</span>
+        <p><strong>Facts-only.</strong> No investment advice. Answers cite Groww scheme pages for five HDFC funds only.</p>
+      </div>
+
+      <main class="chat-main" id="chat-main">
+        <section class="welcome" id="welcome-panel">
+          <h2 class="welcome-headline">Get verified mutual fund facts</h2>
+          <p class="welcome-body">
+            Ask factual questions about expense ratio, exit load, minimum SIP, tax, risk, benchmark,
+            fund managers, or objectives for these five HDFC schemes on Groww.
+          </p>
+          <h3 class="welcome-faq-label">FAQs</h3>
+          <nav class="faq-grid faq-grid--welcome" id="example-chips" aria-label="Example FAQs">
+            <button type="button" class="faq-card" data-chip="What is the expense ratio for HDFC Mid Cap Fund?">
+              <span class="material-symbols-outlined faq-card-icon" aria-hidden="true">chat_bubble_outline</span>
+              <span class="faq-card-text">What is the expense ratio for HDFC Mid Cap Fund?</span>
+            </button>
+            <button type="button" class="faq-card" data-chip="What is the exit load on HDFC Gold ETF Fund of Fund?">
+              <span class="material-symbols-outlined faq-card-icon" aria-hidden="true">chat_bubble_outline</span>
+              <span class="faq-card-text">What is the exit load on HDFC Gold ETF Fund of Fund?</span>
+            </button>
+            <button type="button" class="faq-card" data-chip="Min SIP for silver fund?">
+              <span class="material-symbols-outlined faq-card-icon" aria-hidden="true">chat_bubble_outline</span>
+              <span class="faq-card-text">What is the minimum SIP for the silver fund?</span>
+            </button>
+            <button type="button" class="faq-card" data-chip="Who manages the HDFC NIFTY 50 Index Fund?">
+              <span class="material-symbols-outlined faq-card-icon" aria-hidden="true">chat_bubble_outline</span>
+              <span class="faq-card-text">Who is the fund manager for HDFC NIFTY 50 Index Fund?</span>
+            </button>
+          </nav>
+        </section>
+
+        <div class="messages" id="messages" aria-live="polite" aria-relevant="additions"></div>
+      </main>
+
+      <form class="composer" id="chat-form" autocomplete="off">
+        <div class="search-box search-glow">
+          <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
+          <input
+            type="text"
+            id="message-input"
+            name="message"
+            maxlength="4096"
+            placeholder="Ask about expense ratio, exit load, minimum SIP, managers…"
+            aria-label="Your question"
+          />
+          <button type="submit" class="send-btn" id="send-btn" disabled aria-label="Send message">
+            <span class="material-symbols-outlined" aria-hidden="true">send</span>
+          </button>
+        </div>
+        <p class="composer-hint" id="composer-hint"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

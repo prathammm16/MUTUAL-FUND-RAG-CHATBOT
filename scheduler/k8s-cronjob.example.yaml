@@ -1,0 +1,42 @@
+# Kubernetes CronJob — daily ingest at 10:00 AM IST (Phase 8)
+# Apply after building/pushing an image that includes this repo.
+#
+# Matches INGEST_CRON_SCHEDULE=0 10 * * * and INGEST_TIMEZONE=Asia/Kolkata
+# Requires Kubernetes 1.27+ for spec.timeZone (or convert schedule to UTC: 30 4 * * *).
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hdfc-rag-daily-ingest
+spec:
+  schedule: "0 10 * * *"
+  timeZone: Asia/Kolkata
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: reindex
+              image: hdfc-rag:latest
+              command: ["/bin/bash", "scripts/reindex.sh"]
+              workingDir: /app
+              envFrom:
+                - secretRef:
+                    name: hdfc-rag-env
+              volumeMounts:
+                - name: vector-store
+                  mountPath: /app/vector_store
+                - name: data
+                  mountPath: /app/data
+          volumes:
+            - name: vector-store
+              persistentVolumeClaim:
+                claimName: hdfc-rag-vector-store
+            - name: data
+              persistentVolumeClaim:
+                claimName: hdfc-rag-data

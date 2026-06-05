@@ -1,0 +1,21 @@
+# HDFC RAG — daily corpus refresh at 10:00 AM IST
+#
+# Matches .env.example:
+#   INGEST_CRON_SCHEDULE=0 10 * * *
+#   INGEST_TIMEZONE=Asia/Kolkata
+#
+# Install on Linux/macOS:
+#   1. Replace /path/to/MUTUAL-FUND-RAG-CHATBOT with your clone path
+#   2. chmod +x scripts/reindex.sh
+#   3. crontab -e — paste the CRON_TZ line and job line below
+#
+# SK-06 (UTC vs IST): CRON_TZ pins the schedule to IST regardless of host TZ.
+# PH7-05 / SK-07: reindex.sh uses flock; run_daily.py uses an ingest lock — overlap exits 2.
+
+CRON_TZ=Asia/Kolkata
+
+# Minute Hour Day Month Weekday — 10:00 AM IST daily
+0 10 * * * /path/to/MUTUAL-FUND-RAG-CHATBOT/scripts/reindex.sh
+
+# Optional: mirror cron output to a host log (reindex.sh also writes logs/reindex-YYYYMMDD.log)
+# 0 10 * * * /path/to/MUTUAL-FUND-RAG-CHATBOT/scripts/reindex.sh >> /var/log/hdfc-rag-reindex.log 2>&1

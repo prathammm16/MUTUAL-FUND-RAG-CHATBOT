@@ -1,0 +1,51 @@
+# Phase 8 — scheduled daily corpus refresh (10:00 AM IST = 04:30 UTC)
+# SK-08: Forks without secrets still run with --skip-fetch (template/local embeddings).
+
+name: Daily corpus ingest
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+    inputs:
+      skip_fetch:
+        description: Skip Groww fetch (use existing data/raw/)
+        type: boolean
+        default: true
+
+concurrency:
+  group: daily-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run daily ingest via reindex.sh
+        env:
+          EMBEDDING_PROVIDER: local
+          EMBEDDING_MODEL: BAAI/bge-small-en-v1.5
+          EMBEDDING_AUTO_BGE: "true"
+          VECTOR_STORE_PATH: vector_store
+          INGEST_CRON_SCHEDULE: "0 10 * * *"
+          INGEST_TIMEZONE: Asia/Kolkata
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          chmod +x scripts/reindex.sh
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.skip_fetch }}" != "true" ]; then
+            bash scripts/reindex.sh
+          else
+            bash scripts/reindex.sh --skip-fetch
+          fi

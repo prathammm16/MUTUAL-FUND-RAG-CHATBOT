@@ -1,0 +1,5 @@
+# Minimal deps for Phase 0 (config + tests only)
+pydantic>=2.10.0,<3.0
+pydantic-settings>=2.6.0,<3.0
+python-dotenv>=1.0.0,<2.0
+pytest>=8.3.0,<9.0

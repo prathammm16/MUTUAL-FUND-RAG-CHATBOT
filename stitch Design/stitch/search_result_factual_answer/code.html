@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mutual Fund FAQ Assistant - Search Results</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+        
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #0b0f14;
+        }
+
+        .glass-card {
+            background: rgba(26, 34, 45, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glow-border {
+            position: relative;
+        }
+
+        .glow-border::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, transparent, #00d09c, transparent);
+            filter: blur(8px);
+            opacity: 0.2;
+            z-index: -1;
+            border-radius: inherit;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #00d09c;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .active-nav-bg {
+            background: rgba(66, 74, 86, 0.2);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#0a0e13",
+                        "on-secondary-container": "#b1b9c7",
+                        "primary-fixed-dim": "#2fe0aa",
+                        "primary-fixed": "#59fdc5",
+                        "background": "#101419",
+                        "on-secondary-fixed-variant": "#3f4753",
+                        "secondary-fixed-dim": "#bfc7d6",
+                        "on-background": "#e0e2ea",
+                        "on-primary-fixed": "#002116",
+                        "surface-container-low": "#181c21",
+                        "on-tertiary-fixed-variant": "#3e4854",
+                        "tertiary-container": "#aeb8c7",
+                        "error": "#ffb4ab",
+                        "surface-dim": "#101419",
+                        "secondary": "#bfc7d6",
+                        "on-secondary": "#29313c",
+                        "on-tertiary": "#27313d",
+                        "on-primary-container": "#00533c",
+                        "secondary-fixed": "#dbe3f2",
+                        "outline-variant": "#3c4a43",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#2d3136",
+                        "outline": "#85948c",
+                        "surface-tint": "#2fe0aa",
+                        "surface": "#101419",
+                        "tertiary-fixed": "#d9e3f3",
+                        "primary-container": "#00d09c",
+                        "on-tertiary-fixed": "#121c27",
+                        "on-surface": "#e0e2ea",
+                        "secondary-container": "#424a56",
+                        "surface-container-highest": "#31353b",
+                        "on-secondary-fixed": "#141c27",
+                        "tertiary": "#cad4e3",
+                        "inverse-surface": "#e0e2ea",
+                        "primary": "#44edb7",
+                        "surface-container": "#1c2025",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#006c4f",
+                        "surface-variant": "#31353b",
+                        "on-primary": "#003828",
+                        "on-surface-variant": "#bacac1",
+                        "on-primary-fixed-variant": "#00513b",
+                        "surface-bright": "#36393f",
+                        "surface-container-high": "#262a30",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#bdc7d7",
+                        "on-tertiary-container": "#3f4955"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "container-max-width": "1200px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "40px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Geist"],
+                        "label-md": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "body-md": ["Geist"],
+                        "headline-lg-mobile": ["Geist"],
+                        "body-lg": ["Geist"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10 shadow-sm flex justify-between items-center w-full px-margin-desktop py-4 z-50 fixed top-0 left-0">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-on-surface dark:text-on-surface">Mutual Fund FAQ Assistant</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex gap-8">
+<a class="text-primary font-bold font-label-md text-label-md transition-colors" href="#">Search</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#">History</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#">Updates</a>
+</div>
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed cursor-pointer">info</span>
+</div>
+</header>
+<div class="flex pt-[72px] h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full w-72 bg-surface-container-low border-r border-white/5 p-gutter">
+<div class="mb-8">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Supported Topics</h2>
+<p class="font-label-md text-label-md text-on-surface-variant opacity-70">Source Verification Status</p>
+</div>
+<nav class="flex-grow space-y-2">
+<button class="w-full flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-white/5 transition-all duration-300 ease-in-out rounded-lg font-label-md text-label-md">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+                    Expense Ratio
+                </button>
+<button class="w-full flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-white/5 transition-all duration-300 ease-in-out rounded-lg font-label-md text-label-md">
+<span class="material-symbols-outlined">exit_to_app</span>
+                    Exit Load
+                </button>
+<button class="w-full flex items-center gap-3 px-4 py-3 text-primary font-bold bg-secondary-container/20 rounded-lg transition-all duration-300 ease-in-out font-label-md text-label-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+                    Minimum SIP
+                </button>
+<button class="w-full flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-white/5 transition-all duration-300 ease-in-out rounded-lg font-label-md text-label-md">
+<span class="material-symbols-outlined">gavel</span>
+                    Taxation
+                </button>
+</nav>
+<div class="mt-auto pt-6 border-t border-white/5 space-y-4">
+<button class="w-full bg-primary-container text-on-primary py-3 rounded-xl font-bold hover:opacity-90 transition-opacity">Verify Sources</button>
+<div class="space-y-1">
+<button class="w-full flex items-center gap-3 px-4 py-2 text-on-secondary-container hover:bg-white/5 transition-all rounded-lg font-label-md text-label-md">
+<span class="material-symbols-outlined">settings</span>
+                        Settings
+                    </button>
+<button class="w-full flex items-center gap-3 px-4 py-2 text-on-secondary-container hover:bg-white/5 transition-all rounded-lg font-label-md text-label-md">
+<span class="material-symbols-outlined">help_outline</span>
+                        Support
+                    </button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-grow overflow-y-auto bg-background px-4 md:px-margin-desktop py-8">
+<div class="max-w-[800px] mx-auto space-y-10">
+<!-- Search Box (Top Positioned) -->
+<div class="w-full">
+<div class="relative group">
+<div class="absolute -inset-1 bg-primary/20 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
+<div class="relative flex items-center bg-surface-container-high border border-primary/30 rounded-2xl px-6 py-4 shadow-xl">
+<span class="material-symbols-outlined text-primary mr-4">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-on-surface w-full font-body-lg text-body-lg" placeholder="Ask about mutual fund policies..." type="text" value="What is the minimum SIP amount?"/>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">mic</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">history</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Flow Section -->
+<div class="space-y-8 pb-20">
+<!-- User Question -->
+<div class="flex justify-end">
+<div class="bg-secondary-container text-on-surface px-6 py-4 rounded-2xl rounded-tr-none max-w-[80%] shadow-sm">
+<p class="font-body-md text-body-md">What is the minimum SIP amount?</p>
+</div>
+</div>
+<!-- AI Answer Card -->
+<div class="flex justify-start items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(0,208,156,0.3)]">
+<span class="material-symbols-outlined text-on-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="glass-card glow-border rounded-2xl p-8 space-y-6 w-full">
+<div class="flex justify-between items-start">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-primary font-bold font-label-md text-label-md">VERIFIED RESPONSE</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">System Policy Analysis</h3>
+</div>
+<div class="bg-primary/10 px-3 py-1.5 rounded-full flex items-center gap-2 border border-primary/20">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-primary font-bold text-[12px]">Source Verified</span>
+</div>
+</div>
+<div class="space-y-4">
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                                    The minimum SIP (Systematic Investment Plan) amount for this specific scheme is <span class="text-primary font-bold">₹100</span>. 
+                                </p>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                    This low entry threshold is designed to encourage long-term wealth creation for all investor classes. Please note that while the SIP minimum is ₹100, the first investment must be processed alongside valid KYC documentation as per SEBI regulations.
+                                </p>
+</div>
+<!-- Official Source Link -->
+<div class="pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+<a class="flex items-center gap-2 text-primary hover:underline group" href="#">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform">link</span>
+<span class="font-label-md text-label-md">Official Scheme Information Document (SID)</span>
+</a>
+<span class="font-label-md text-label-md text-on-tertiary-fixed-variant opacity-60">Last updated from sources: 05 Jun 2026</span>
+</div>
+<!-- Compliance Warning -->
+<div class="bg-surface-container-high border-l-4 border-[#FFB000] p-4 rounded-r-lg">
+<p class="text-[12px] font-mono text-[#FFB000] uppercase tracking-wider mb-1">Compliance Disclaimer</p>
+<p class="text-[13px] text-on-surface-variant font-body-md">Mutual fund investments are subject to market risks. Read all scheme related documents carefully before investing. Past performance is not an indicator of future returns.</p>
+</div>
+</div>
+</div>
+<!-- Follow up / Typing Animation -->
+<div class="flex justify-start items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 opacity-50">
+<span class="material-symbols-outlined text-on-surface-variant">smart_toy</span>
+</div>
+<div class="glass-card rounded-2xl px-6 py-4 flex items-center gap-2">
+<div class="typing-dot"></div>
+<div class="typing-dot"></div>
+<div class="typing-dot"></div>
+<span class="ml-2 font-label-md text-label-md text-on-surface-variant">Analyzing related tax implications...</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-white/5 py-8 px-margin-desktop flex flex-col items-center gap-4 fixed bottom-0 left-0 w-full z-10 md:pl-72">
+<div class="flex gap-8">
+<a class="text-on-tertiary-fixed-variant hover:text-on-surface transition-colors font-label-md text-label-md" href="#">Compliance Disclaimer</a>
+<a class="text-on-tertiary-fixed-variant hover:text-on-surface transition-colors font-label-md text-label-md" href="#">Source Information</a>
+<a class="text-on-tertiary-fixed-variant hover:text-on-surface transition-colors font-label-md text-label-md" href="#">Privacy Policy</a>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-center opacity-60">
+            © 2024 Mutual Fund FAQ Assistant. All rights reserved. Data sourced from SEBI-registered fund houses.
+        </p>
+</footer>
+<script>
+        // Simple micro-interaction for search bar glow
+        const searchInput = document.querySelector('input');
+        const glowTarget = searchInput.closest('.group').querySelector('.absolute');
+        
+        searchInput.addEventListener('focus', () => {
+            glowTarget.style.opacity = '1';
+        });
+        
+        searchInput.addEventListener('blur', () => {
+            glowTarget.style.opacity = '0';
+        });
+
+        // Simulating the loading state completion after 5 seconds
+        setTimeout(() => {
+            const typingArea = document.querySelector('.animate-in');
+            if(typingArea) {
+                typingArea.style.opacity = '0.5';
+                typingArea.querySelector('span').innerText = 'Ready for follow-up questions';
+                typingArea.querySelectorAll('.typing-dot').forEach(dot => dot.style.display = 'none');
+            }
+        }, 5000);
+    </script>
+</body></html>
