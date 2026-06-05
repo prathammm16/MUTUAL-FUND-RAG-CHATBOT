@@ -1,0 +1,4 @@
+# Local dev + CI — optional PyTorch BGE backend and tests
+-r requirements-prod.txt
+sentence-transformers>=3.3.0,<4.0
+pytest>=8.3.0,<9.0

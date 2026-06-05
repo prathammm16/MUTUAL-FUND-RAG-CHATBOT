@@ -18,7 +18,7 @@ from app.config import get_all_schemes, get_settings, is_allowlisted_source_url
 from ingestion.chunk_store import MIN_TOTAL_CHUNKS
 from ingestion.chunk import Chunk, ChunkValidationError, validate_chunks
 from ingestion.embed import embed_texts as _embed_texts
-from ingestion.embed import resolve_embedding_model
+from ingestion.embed import release_embedding_models, resolve_embedding_model
 from ingestion.chunk_store import (
     DEFAULT_CHUNKS_DIR,
     build_chunks_from_corpus_dir,
@@ -37,8 +37,25 @@ DEFAULT_INDEX_DIR = _PROJECT_ROOT / "data" / "index"
 
 COLLECTION_NAME = "hdfc_groww_corpus"
 
+# Tuned for ~45 vectors — lower RAM than Chroma defaults (Railway free tier)
+_CHROMA_HNSW_METADATA: dict[str, str | int] = {
+    "hnsw:space": "cosine",
+    "hnsw:M": 8,
+    "hnsw:construction_ef": 32,
+    "hnsw:search_ef": 16,
+}
+
+_client_cache: dict[str, Any] = {}
+_collection_cache: dict[tuple[str, str], Collection] = {}
+
 # Back-compat alias for tests / callers
 ChunkIndexError = ChunkValidationError
+
+
+def clear_index_cache() -> None:
+    """Drop cached Chroma clients/collections (after rebuild or tests)."""
+    _client_cache.clear()
+    _collection_cache.clear()
 
 
 def chunk_to_metadata(chunk: Chunk, *, ingested_at: str | None = None) -> dict[str, str]:
@@ -79,7 +96,12 @@ def get_chroma_client(persist_directory: str | None = None) -> chromadb.Persiste
 
     path = resolve_index_dir(persist_directory)
     path.mkdir(parents=True, exist_ok=True)
-    return chromadb.PersistentClient(path=str(path))
+    key = str(path)
+    client = _client_cache.get(key)
+    if client is None:
+        client = chromadb.PersistentClient(path=key)
+        _client_cache[key] = client
+    return client
 
 
 def get_or_create_collection(
@@ -88,7 +110,7 @@ def get_or_create_collection(
 ) -> Collection:
     return client.get_or_create_collection(
         name=name,
-        metadata={"hnsw:space": "cosine"},
+        metadata=_CHROMA_HNSW_METADATA,
     )
 
 
@@ -137,7 +159,7 @@ def index_corpus(
     chunks_dir: Path | None = None,
     persist_directory: str | None = None,
     reset_collection: bool = False,
-    batch_size: int = 64,
+    batch_size: int | None = None,
     ingested_at: str | None = None,
 ) -> int:
     """
@@ -152,11 +174,14 @@ def index_corpus(
     settings = get_settings()
     ingested = ingested_at or settings.ingested_at or _utc_now_iso()
     embed_model = resolve_embedding_model(chunks=chunks)
+    effective_batch = batch_size or settings.index_batch_size
     logger.info(
-        "Embedding %d chunks with provider=%s model=%s",
+        "Embedding %d chunks with provider=%s backend=%s model=%s batch=%d",
         len(chunks),
         settings.embedding_provider,
+        settings.resolved_embedding_backend(),
         embed_model,
+        effective_batch,
     )
 
     client = get_chroma_client(persist_directory)
@@ -165,12 +190,14 @@ def index_corpus(
             client.delete_collection(COLLECTION_NAME)
         except Exception:
             pass
+        clear_index_cache()
+        client = get_chroma_client(persist_directory)
 
     collection = get_or_create_collection(client)
     total = 0
 
-    for start in range(0, len(chunks), batch_size):
-        batch = chunks[start : start + batch_size]
+    for start in range(0, len(chunks), effective_batch):
+        batch = chunks[start : start + effective_batch]
         embeddings = _embed_texts(
             [c.text for c in batch],
             model=embed_model,
@@ -184,7 +211,7 @@ def index_corpus(
         COLLECTION_NAME,
         persist_directory or get_settings().vector_store_path,
     )
-    del client, collection
+    release_embedding_models()
     gc.collect()
     return total
 
@@ -193,13 +220,21 @@ def get_collection(
     persist_directory: str | None = None,
     name: str = COLLECTION_NAME,
 ) -> Collection:
-    """Return an existing Chroma collection (for retrieval smoke tests)."""
+    """Return an existing Chroma collection (cached per path + name)."""
+    path_key = str(resolve_index_dir(persist_directory))
+    cache_key = (path_key, name)
+    cached = _collection_cache.get(cache_key)
+    if cached is not None:
+        return cached
     client = get_chroma_client(persist_directory)
-    return client.get_collection(name=name)
+    collection = client.get_collection(name=name)
+    _collection_cache[cache_key] = collection
+    return collection
 
 
 def close_chroma_clients() -> None:
     """Best-effort release of Chroma SQLite handles (Windows daily re-ingest)."""
+    clear_index_cache()
     gc.collect()
 
 
@@ -355,12 +390,10 @@ def validate_indexed_store(
     if count < MIN_TOTAL_CHUNKS:
         errors.append(f"expected >={MIN_TOTAL_CHUNKS} indexed chunks, got {count}")
 
-    client = get_chroma_client(persist_directory)
-    collection = client.get_collection(name=COLLECTION_NAME)
-    all_rows = collection.get(include=["metadatas"])
-    del client, collection
-    gc.collect()
-    metas = all_rows.get("metadatas") or []
+    collection = get_collection(persist_directory)
+    sample_limit = min(count, 50)
+    sample_rows = collection.get(limit=sample_limit, include=["metadatas"])
+    metas = sample_rows.get("metadatas") or []
     scheme_ids_found: set[str] = set()
     has_fund_management = False
     has_costs = False

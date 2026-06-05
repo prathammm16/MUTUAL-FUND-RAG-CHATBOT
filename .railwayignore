@@ -1,0 +1,20 @@
+# Shrink Railway slug — UI is on Vercel; API only needs app/, ingestion/, data/chunks/
+ui/
+tests/
+docs/
+stitch Design/
+logs/
+.github/
+.pytest_cache/
+__pycache__/
+*.pyc
+.venv/
+venv/
+vector_store/
+vector_store.staging/
+vector_store.previous/
+data/raw/
+data/corpus/
+data/chunks/*.md
+data/chunks/all_chunks.json
+data/ingest/

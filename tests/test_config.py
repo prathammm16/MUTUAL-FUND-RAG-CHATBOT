@@ -5,6 +5,8 @@ import pytest
 from app.config import (
     ALLOWLISTED_SOURCE_URLS,
     AMC_NAME,
+    EMBEDDING_BACKEND_FASTEMBED,
+    EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS,
     SCHEME_ALIASES,
     SCHEMES,
     Scheme,
@@ -133,3 +135,22 @@ class TestSettings:
                 scheme_name="Bad",
                 source_url="https://example.com/fund",
             )
+
+
+class TestEmbeddingBackend:
+    def test_auto_uses_fastembed_in_production(self, monkeypatch) -> None:
+        monkeypatch.setenv("APP_ENV", "production")
+        monkeypatch.setenv("EMBEDDING_BACKEND", "auto")
+        get_settings.cache_clear()
+        assert get_settings().resolved_embedding_backend() == EMBEDDING_BACKEND_FASTEMBED
+        get_settings.cache_clear()
+
+    def test_auto_uses_sentence_transformers_in_dev(self, monkeypatch) -> None:
+        monkeypatch.setenv("APP_ENV", "development")
+        monkeypatch.setenv("EMBEDDING_BACKEND", "auto")
+        get_settings.cache_clear()
+        assert (
+            get_settings().resolved_embedding_backend()
+            == EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS
+        )
+        get_settings.cache_clear()

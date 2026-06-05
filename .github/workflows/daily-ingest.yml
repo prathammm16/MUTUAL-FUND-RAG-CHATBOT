@@ -38,8 +38,10 @@ jobs:
       - name: Run daily ingest
         env:
           EMBEDDING_PROVIDER: local
+          EMBEDDING_BACKEND: fastembed
           EMBEDDING_MODEL: BAAI/bge-small-en-v1.5
           EMBEDDING_AUTO_BGE: "true"
+          INDEX_BATCH_SIZE: "16"
           VECTOR_STORE_PATH: vector_store
           INGEST_CRON_SCHEDULE: "0 10 * * *"
           INGEST_TIMEZONE: Asia/Kolkata

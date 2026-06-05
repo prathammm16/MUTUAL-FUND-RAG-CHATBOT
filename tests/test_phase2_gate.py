@@ -19,7 +19,9 @@ VECTOR_STORE = PROJECT_ROOT / "vector_store"
 @pytest.fixture(scope="module")
 def vector_store_ready():
     pytest.importorskip("chromadb")
-    pytest.importorskip("sentence_transformers")
+    from tests.conftest import require_local_embeddings
+
+    require_local_embeddings()
     if not collection_exists(str(VECTOR_STORE)):
         pytest.skip("vector_store missing; run scripts/build_index.py --reset")
     if get_indexed_chunk_count(str(VECTOR_STORE)) < MIN_TOTAL_CHUNKS:

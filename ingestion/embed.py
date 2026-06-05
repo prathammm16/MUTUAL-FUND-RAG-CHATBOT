@@ -2,7 +2,8 @@
 Embedding providers for Phase 2 indexing and retrieval.
 
 Supports:
-- **local** — free Hugging Face models via ``sentence-transformers`` (BGE small/large)
+- **fastembed** — lightweight ONNX BGE (default for production / Railway free tier)
+- **sentence_transformers** — full PyTorch BGE (local dev / legacy)
 - **openai** — paid ``text-embedding-3-*`` API (optional)
 """
 
@@ -15,6 +16,8 @@ from typing import TYPE_CHECKING
 from app.config import (
     BGE_LARGE_MODEL,
     BGE_SMALL_MODEL,
+    EMBEDDING_BACKEND_FASTEMBED,
+    EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS,
     EMBEDDING_PROVIDER_LOCAL,
     EMBEDDING_PROVIDER_OPENAI,
     get_settings,
@@ -98,12 +101,61 @@ def _get_sentence_transformer(model_name: str):
         from sentence_transformers import SentenceTransformer
     except ImportError as exc:
         raise EmbeddingError(
-            "sentence-transformers is required for local embeddings. "
+            "sentence-transformers is required for EMBEDDING_BACKEND=sentence_transformers. "
             "Install: pip install sentence-transformers"
         ) from exc
 
-    logger.info("Loading local embedding model: %s", model_name)
+    logger.info("Loading sentence-transformers model: %s", model_name)
     return SentenceTransformer(model_name)
+
+
+@lru_cache(maxsize=2)
+def _get_fastembed_model(model_name: str):
+    try:
+        from fastembed import TextEmbedding
+    except ImportError as exc:
+        raise EmbeddingError(
+            "fastembed is required for EMBEDDING_BACKEND=fastembed. "
+            "Install: pip install fastembed"
+        ) from exc
+
+    logger.info("Loading fastembed model: %s", model_name)
+    return TextEmbedding(model_name=model_name)
+
+
+def release_embedding_models() -> None:
+    """Free in-memory embedding weights after index builds (Railway RAM)."""
+    _get_sentence_transformer.cache_clear()
+    _get_fastembed_model.cache_clear()
+
+
+def warmup_embedding_model() -> None:
+    """Optional startup warm-up when PRELOAD_EMBEDDING_MODEL=true."""
+    settings = get_settings()
+    if settings.embedding_provider != EMBEDDING_PROVIDER_LOCAL:
+        return
+    model = resolve_embedding_model()
+    backend = settings.resolved_embedding_backend()
+    if backend == EMBEDDING_BACKEND_FASTEMBED:
+        _get_fastembed_model(model)
+    else:
+        _get_sentence_transformer(model)
+
+
+def _normalize_vectors(vectors: list) -> list[list[float]]:
+    try:
+        import numpy as np
+    except ImportError:
+        return [list(v) for v in vectors]
+
+    out: list[list[float]] = []
+    for vec in vectors:
+        arr = np.asarray(vec, dtype=np.float32)
+        norm = float(np.linalg.norm(arr))
+        if norm > 0:
+            arr = arr / norm
+        out.append(arr.tolist())
+    return out
 
 
 def _embed_openai(
@@ -126,20 +178,59 @@ def _embed_openai(
     return [item.embedding for item in sorted(response.data, key=lambda d: d.index)]
 
 
-def _embed_local(texts: list[str], *, model: str, is_query: bool) -> list[list[float]]:
+def _apply_query_prefix(texts: list[str], *, is_query: bool) -> list[str]:
+    if not is_query:
+        return texts
+    return [
+        t if t.startswith(BGE_QUERY_PREFIX) else f"{BGE_QUERY_PREFIX}{t}"
+        for t in texts
+    ]
+
+
+def _embed_sentence_transformers(
+    texts: list[str],
+    *,
+    model: str,
+    is_query: bool,
+) -> list[list[float]]:
     encoder = _get_sentence_transformer(model)
-    inputs = texts
-    if is_query:
-        inputs = [
-            t if t.startswith(BGE_QUERY_PREFIX) else f"{BGE_QUERY_PREFIX}{t}"
-            for t in texts
-        ]
+    inputs = _apply_query_prefix(texts, is_query=is_query)
     vectors = encoder.encode(
         inputs,
         normalize_embeddings=True,
         show_progress_bar=False,
     )
     return vectors.tolist()
+
+
+def _embed_fastembed(
+    texts: list[str],
+    *,
+    model: str,
+    is_query: bool,
+) -> list[list[float]]:
+    encoder = _get_fastembed_model(model)
+    inputs = _apply_query_prefix(texts, is_query=is_query)
+    vectors = list(encoder.embed(inputs))
+    return _normalize_vectors(vectors)
+
+
+def _embed_local(
+    texts: list[str],
+    *,
+    model: str,
+    is_query: bool,
+    backend: str | None = None,
+) -> list[list[float]]:
+    resolved = backend or get_settings().resolved_embedding_backend()
+    if resolved == EMBEDDING_BACKEND_FASTEMBED:
+        return _embed_fastembed(texts, model=model, is_query=is_query)
+    if resolved == EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS:
+        return _embed_sentence_transformers(texts, model=model, is_query=is_query)
+    raise EmbeddingError(
+        f"Unknown EMBEDDING_BACKEND={resolved!r}; use "
+        f"{EMBEDDING_BACKEND_FASTEMBED!r} or {EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS!r}"
+    )
 
 
 def embed_texts(

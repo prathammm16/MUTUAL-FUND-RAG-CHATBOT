@@ -132,7 +132,11 @@ Set these in **Variables** (never commit secrets):
 | `CHAT_RATE_LIMIT_PER_MINUTE` | `30` | Optional; prod defaults to 30 when `APP_ENV=production` |
 | `ADMIN_REINDEX_ENABLED` | `false` | Disable admin reindex in public prod |
 | `EMBEDDING_PROVIDER` | `local` or `openai` | See §4.6 |
+| `EMBEDDING_BACKEND` | `fastembed` | ONNX runtime (~80MB RAM); required on free tier |
 | `EMBEDDING_MODEL` | `BAAI/bge-small-en-v1.5` | For local BGE |
+| `SERVE_UI` | `false` | UI is on Vercel |
+| `PRELOAD_EMBEDDING_MODEL` | `false` | Lazy-load embeddings on first chat |
+| `INDEX_BATCH_SIZE` | `16` | Lower peak RAM during index builds |
 | `OPENAI_API_KEY` | (if using OpenAI embeddings) | Only when `EMBEDDING_PROVIDER=openai` |
 | `TOP_K` | `5` | Retrieval default |
 | `SIMILARITY_THRESHOLD` | `0.7` | OpenAI embeddings; BGE uses lower internal thresholds |
@@ -382,21 +386,14 @@ The existing workflow rebuilds the index in CI. To use it with Railway you would
 
 Not required if you configure everything in the Railway/Vercel dashboards, but useful for reproducibility.
 
-### `Procfile` (repo root, Railway)
+### `Procfile` / `railway.toml` / `nixpacks.toml` (repo root)
 
-```text
-web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
+Already committed. Railway installs **`requirements-prod.txt`** (no PyTorch) and runs **1 uvicorn worker**.
 
-### `railway.toml` (repo root)
+Bootstrap index once in Railway shell:
 
-```toml
-[build]
-builder = "nixpacks"
-
-[deploy]
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
-restartPolicyType = "on_failure"
+```bash
+python scripts/railway_bootstrap.py
 ```
 
 ### `ui/vercel.json` (static headers / SPA fallback)
@@ -435,6 +432,62 @@ restartPolicyType = "on_failure"
 ## 12. Disclaimer
 
 This assistant is **facts-only** and does not provide investment advice. The deployed UI must keep the visible disclaimer and compliance refusals intact. Corpus freshness depends on the daily ingest job configured in §6.
+
+---
+
+## 13. Railway free tier optimization
+
+The repo is tuned for **512MB–1GB** Railway instances. See `.env.production.example`.
+
+### Resource audit (what used the most RAM/storage)
+
+| Consumer | Before | After | Savings |
+|----------|--------|-------|---------|
+| **sentence-transformers + PyTorch** | ~800MB–1.5GB RAM at runtime | **fastembed** (ONNX) ~80–150MB | **~85% RAM** |
+| **Static UI on API** | Serves `ui/` from FastAPI | `SERVE_UI=false` (Vercel only) | Disk + minor RAM |
+| **Full `requirements.txt` in image** | PyTorch, pytest, ST | `requirements-prod.txt` only | **~1.5GB disk** |
+| **Deploy slug** | Whole repo | `.railwayignore` excludes `ui/`, `tests/`, `data/corpus/` | **Smaller upload** |
+| **Chroma HNSW defaults** | High `M` / `ef` for large indexes | Tuned for 45 vectors | Lower RAM at query |
+| **Index validation** | Loaded all chunk metadata | Samples ≤50 rows | Less spike RAM |
+| **Chroma clients** | New client per request | Singleton cache | Fewer handles / RAM |
+| **Embedding model at startup** | Loaded on import | Lazy load; `PRELOAD_EMBEDDING_MODEL=false` | Faster, leaner boot |
+| **Index build batches** | 64 chunks/batch | `INDEX_BATCH_SIZE=16` | Lower peak RAM |
+| **Duplicate chunk JSON** | `all_chunks.json` + per-scheme | Per-scheme files only at load | Less parse RAM |
+
+### Required Railway production env
+
+```text
+APP_ENV=production
+EMBEDDING_BACKEND=fastembed
+SERVE_UI=false
+PRELOAD_EMBEDDING_MODEL=false
+INDEX_BATCH_SIZE=16
+VECTOR_STORE_PATH=/app/vector_store
+```
+
+**Important:** Rebuild the index with the **same backend** you use in production:
+
+```bash
+python scripts/railway_bootstrap.py
+```
+
+Do not mix an index built with `sentence_transformers` and queries with `fastembed`.
+
+### What to skip on free tier
+
+| Service | Recommendation |
+|---------|------------------|
+| **Daily ingest cron on Railway** | Skip initially — rebuild manually weekly, or use GitHub Actions |
+| **Admin reindex endpoint** | `ADMIN_REINDEX_ENABLED=false` |
+| **BGE-large / OpenAI embeddings** | Stick to `bge-small` + fastembed |
+| **Multiple uvicorn workers** | Keep `--workers 1` (already in `nixpacks.toml`) |
+| **Preload embedding model** | Leave `PRELOAD_EMBEDDING_MODEL=false` |
+
+### Alternatives if still OOM
+
+1. Set `EMBEDDING_PROVIDER=openai` + `text-embedding-3-small` (no local model; small API cost).
+2. Upgrade Railway Hobby for more RAM.
+3. Build index locally/CI, copy `vector_store/` to Railway volume once (no embed at runtime beyond queries).
 
 ---
 

@@ -78,7 +78,9 @@ class TestPhase2Integration:
     @pytest.fixture(scope="class")
     def ensure_index(self):
         pytest.importorskip("chromadb")
-        pytest.importorskip("sentence_transformers")
+        from tests.conftest import require_local_embeddings
+
+        require_local_embeddings()
         from ingestion.index import index_corpus
 
         root = Path(__file__).resolve().parents[1]
@@ -180,7 +182,9 @@ class TestPhase9PerSchemeRetrieval:
     @pytest.fixture(scope="class")
     def ensure_index(self):
         pytest.importorskip("chromadb")
-        pytest.importorskip("sentence_transformers")
+        from tests.conftest import require_local_embeddings
+
+        require_local_embeddings()
         from ingestion.index import index_corpus
 
         index_dir = str(DEFAULT_INDEX_DIR)

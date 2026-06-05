@@ -19,6 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import router as api_router
 from app.config import get_settings
 from app.middleware.rate_limit import get_chat_rate_limiter
+from ingestion.embed import warmup_embedding_model
 
 _UI_DIR = Path(__file__).resolve().parents[1] / "ui"
 
@@ -37,6 +38,12 @@ async def _lifespan(app: FastAPI):
             "Chat rate limit: %s requests/minute per client",
             settings.effective_chat_rate_limit_per_minute,
         )
+    if settings.preload_embedding_model:
+        logging.info(
+            "Preloading embedding model (backend=%s)",
+            settings.resolved_embedding_backend(),
+        )
+        warmup_embedding_model()
     yield
 
 
@@ -75,7 +82,7 @@ def create_app() -> FastAPI:
             return await call_next(request)
 
     app.include_router(api_router)
-    if _UI_DIR.is_dir():
+    if settings.serve_ui and _UI_DIR.is_dir():
         app.mount("/", StaticFiles(directory=str(_UI_DIR), html=True), name="ui")
     return app
 

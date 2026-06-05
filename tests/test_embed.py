@@ -65,6 +65,15 @@ class TestResolveModel:
 
 
 class TestLocalEmbed:
+    @pytest.fixture(autouse=True)
+    def _sentence_transformers_backend(self, monkeypatch):
+        monkeypatch.setenv("EMBEDDING_BACKEND", "sentence_transformers")
+        from app.config import get_settings
+
+        get_settings.cache_clear()
+        yield
+        get_settings.cache_clear()
+
     @patch("ingestion.embed._get_sentence_transformer")
     def test_embed_texts_passages(self, mock_get_model, mid_cap_chunks) -> None:
         mock_model = MagicMock()

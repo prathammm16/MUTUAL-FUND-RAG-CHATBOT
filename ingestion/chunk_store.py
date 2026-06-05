@@ -176,20 +176,25 @@ def load_scheme_chunks(
 
 
 def load_all_chunks(chunks_dir: Path | None = None) -> list[Chunk]:
-    """Load chunks from ``all_chunks.json`` or aggregate per-scheme files."""
+    """Load chunks from per-scheme JSON files (falls back to ``all_chunks.json``)."""
     base = chunks_dir or DEFAULT_CHUNKS_DIR
+    scheme_files = sorted(
+        p for p in base.glob("*.json") if p.name != "all_chunks.json"
+    )
+    if scheme_files:
+        chunks: list[Chunk] = []
+        for json_path in scheme_files:
+            data = json.loads(json_path.read_text(encoding="utf-8"))
+            chunks.extend(chunk_from_dict(c) for c in data.get("chunks") or [])
+        if chunks:
+            return chunks
+
     all_path = base / "all_chunks.json"
     if all_path.is_file():
         data = json.loads(all_path.read_text(encoding="utf-8"))
         return [chunk_from_dict(c) for c in data.get("chunks") or []]
 
-    chunks: list[Chunk] = []
-    for json_path in sorted(base.glob("*.json")):
-        if json_path.name == "all_chunks.json":
-            continue
-        data = json.loads(json_path.read_text(encoding="utf-8"))
-        chunks.extend(chunk_from_dict(c) for c in data.get("chunks") or [])
-    return chunks
+    return []
 
 
 def build_chunks_from_corpus_dir(

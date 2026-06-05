@@ -109,7 +109,9 @@ class TestRunDailyOffline:
 
     def test_run_daily_skip_fetch(self, isolated_store: Path) -> None:
         pytest.importorskip("chromadb")
-        pytest.importorskip("sentence_transformers")
+        from tests.conftest import require_local_embeddings
+
+        require_local_embeddings()
         result = run_daily_ingest(skip_fetch=True, live_index_dir=isolated_store)
         assert result.chunk_count >= 40
         assert result.ingested_at
@@ -120,7 +122,9 @@ class TestRunDailyOffline:
 
     def test_second_run_updates_metadata(self, isolated_store: Path) -> None:
         pytest.importorskip("chromadb")
-        pytest.importorskip("sentence_transformers")
+        from tests.conftest import require_local_embeddings
+
+        require_local_embeddings()
         from ingestion.index import close_chroma_clients
 
         first = run_daily_ingest(skip_fetch=True, live_index_dir=isolated_store)
@@ -162,7 +166,9 @@ class TestAdminReindex:
 
     def test_admin_reindex_with_token(self, isolated_store: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         pytest.importorskip("chromadb")
-        pytest.importorskip("sentence_transformers")
+        from tests.conftest import require_local_embeddings
+
+        require_local_embeddings()
         monkeypatch.setenv("ADMIN_REINDEX_TOKEN", "test-secret")
         get_settings.cache_clear()
         client = TestClient(create_app())

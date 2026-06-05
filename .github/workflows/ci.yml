@@ -31,8 +31,10 @@ jobs:
       - name: Build vector index
         env:
           EMBEDDING_PROVIDER: local
+          EMBEDDING_BACKEND: fastembed
           EMBEDDING_MODEL: BAAI/bge-small-en-v1.5
           EMBEDDING_AUTO_BGE: "true"
+          INDEX_BATCH_SIZE: "16"
         run: python scripts/build_index.py --reset
 
       - name: Run pytest

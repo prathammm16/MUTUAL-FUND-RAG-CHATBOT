@@ -25,7 +25,9 @@ VECTOR_STORE = str(PROJECT_ROOT / "vector_store")
 @pytest.fixture(scope="module")
 def vector_store_ready():
     pytest.importorskip("chromadb")
-    pytest.importorskip("sentence_transformers")
+    from tests.conftest import require_local_embeddings
+
+    require_local_embeddings()
     if not collection_exists(VECTOR_STORE):
         pytest.skip("vector_store missing; run scripts/build_index.py --reset")
 

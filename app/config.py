@@ -23,6 +23,8 @@ BGE_SMALL_MODEL: Final[str] = "BAAI/bge-small-en-v1.5"
 BGE_LARGE_MODEL: Final[str] = "BAAI/bge-large-en-v1.5"
 EMBEDDING_PROVIDER_LOCAL: Final[str] = "local"
 EMBEDDING_PROVIDER_OPENAI: Final[str] = "openai"
+EMBEDDING_BACKEND_FASTEMBED: Final[str] = "fastembed"
+EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS: Final[str] = "sentence_transformers"
 
 
 @dataclass(frozen=True)
@@ -233,6 +235,12 @@ class Settings(BaseSettings):
     admin_reindex_token: str = ""
     admin_reindex_enabled: bool = True
     max_ingest_chunk_drop_ratio: float = 0.5
+    # Local embedding runtime: fastembed (ONNX, ~80MB RAM) or sentence_transformers (PyTorch, ~1GB+)
+    # auto → fastembed in production, sentence_transformers in development
+    embedding_backend: str = "auto"
+    index_batch_size: int = 16
+    preload_embedding_model: bool = False
+    serve_ui: bool = True
     # Phase 9 — production API hardening
     app_env: str = "development"
     cors_origins: str = ""
@@ -241,6 +249,29 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.app_env.strip().lower() == "production"
+
+    def resolved_embedding_backend(self) -> str:
+        """Pick ONNX fastembed (Railway-friendly) vs full sentence-transformers."""
+        raw = (self.embedding_backend or "auto").strip().lower()
+        if raw == "auto":
+            return (
+                EMBEDDING_BACKEND_FASTEMBED
+                if self.is_production
+                else EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS
+            )
+        if raw in (
+            EMBEDDING_BACKEND_FASTEMBED,
+            "fast",
+            "onnx",
+        ):
+            return EMBEDDING_BACKEND_FASTEMBED
+        if raw in (
+            EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS,
+            "st",
+            "torch",
+        ):
+            return EMBEDDING_BACKEND_SENTENCE_TRANSFORMERS
+        return raw
 
     @property
     def effective_chat_rate_limit_per_minute(self) -> int:
