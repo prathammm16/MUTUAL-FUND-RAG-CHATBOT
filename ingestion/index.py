@@ -205,6 +205,9 @@ def close_chroma_clients() -> None:
 
 def collection_exists(persist_directory: str | None = None, name: str = COLLECTION_NAME) -> bool:
     """True if the named collection is present on disk."""
+    path = resolve_index_dir(persist_directory)
+    if not path.is_dir():
+        return False
     client = get_chroma_client(persist_directory)
     try:
         client.get_collection(name=name)
