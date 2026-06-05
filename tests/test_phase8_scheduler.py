@@ -63,6 +63,7 @@ class TestSchedulerArtifacts:
         # 10:00 AM IST = 04:30 UTC
         assert 'cron: "30 4 * * *"' in workflow or "30 4 * * *" in workflow
         assert "reindex.sh" in workflow
+        assert "build_index.py" in workflow
         assert "Asia/Kolkata" in workflow or "INGEST_TIMEZONE" in workflow
 
     def test_k8s_example_uses_ist_schedule(self) -> None:

@@ -1,5 +1,5 @@
 # Phase 8 — scheduled daily corpus refresh (10:00 AM IST = 04:30 UTC)
-# SK-08: Forks without secrets still run with --skip-fetch (template/local embeddings).
+# SK-08: Manual "skip fetch" uses data/chunks/ (committed); full pipeline needs network fetch.
 
 name: Daily corpus ingest
 
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       skip_fetch:
-        description: Skip Groww fetch (use existing data/raw/)
+        description: Skip Groww fetch — rebuild index from committed data/chunks/
         type: boolean
         default: true
 
@@ -32,7 +32,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run daily ingest via reindex.sh
+      - name: Configure environment
+        run: cp .env.example .env
+
+      - name: Run daily ingest
         env:
           EMBEDDING_PROVIDER: local
           EMBEDDING_MODEL: BAAI/bge-small-en-v1.5
@@ -44,8 +47,14 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           chmod +x scripts/reindex.sh
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.skip_fetch }}" != "true" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] || \
+             { [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.skip_fetch }}" = "false" ]; }; then
+            echo "Full pipeline: fetch Groww pages → parse → chunk → index"
             bash scripts/reindex.sh
           else
-            bash scripts/reindex.sh --skip-fetch
+            echo "Offline rebuild: index committed data/chunks/ (data/raw/ is not in git)"
+            python scripts/build_index.py --reset
           fi
+
+      - name: Verify index
+        run: python -c "from ingestion.index import get_indexed_chunk_count, validate_indexed_store; e=validate_indexed_store('vector_store'); assert not e, e; assert get_indexed_chunk_count('vector_store') >= 40"

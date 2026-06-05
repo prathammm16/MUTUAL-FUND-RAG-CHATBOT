@@ -44,7 +44,17 @@ See [`k8s-cronjob.example.yaml`](./k8s-cronjob.example.yaml). Use `concurrencyPo
 
 ## GitHub Actions
 
-[`.github/workflows/daily-ingest.yml`](../.github/workflows/daily-ingest.yml) runs on `30 4 * * *` UTC (= 10:00 AM IST). Forks need repository secrets for optional keys (SK-08); use `workflow_dispatch` for manual runs without cron.
+[`.github/workflows/daily-ingest.yml`](../.github/workflows/daily-ingest.yml) runs on `30 4 * * *` UTC (= 10:00 AM IST).
+
+| Trigger | Behavior |
+|---------|----------|
+| **Scheduled cron** | Full `reindex.sh` — fetches Groww, rebuilds corpus + index |
+| **Manual run** (default) | Rebuilds index from committed `data/chunks/` (`build_index.py --reset`) |
+| **Manual run** (`skip_fetch: false`) | Full `reindex.sh` with live Groww fetch |
+
+**Note:** `data/raw/` is gitignored, so manual runs with the default **skip fetch** option cannot use `run_daily --skip-fetch` in CI — they index from `data/chunks/` instead. On your VM/server, `--skip-fetch` still uses local `data/raw/` or `uploads/`.
+
+Forks need repository secrets for optional keys (SK-08). Scheduled workflows only run on the default branch and may be delayed on inactive repos.
 
 ## Manual smoke (exit gate)
 

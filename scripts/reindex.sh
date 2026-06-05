@@ -50,4 +50,8 @@ status=$?
 set -e
 
 echo "=== $(date -Is) reindex finished exit=$status ===" >>"$LOG_FILE"
+if [ "$status" -ne 0 ]; then
+  echo "--- reindex log ($LOG_FILE) ---" >&2
+  cat "$LOG_FILE" >&2 || true
+fi
 exit "$status"
