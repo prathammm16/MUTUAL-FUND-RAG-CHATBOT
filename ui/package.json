@@ -1,6 +1,9 @@
 {
   "name": "hdfc-faq-ui",
   "private": true,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "node scripts/build-config.js"
   }
