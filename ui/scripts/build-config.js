@@ -1,7 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 
-const apiBase = (process.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+let apiBase = (process.env.VITE_API_BASE_URL || "").trim().replace(/\/$/, "");
+if (apiBase && !/^https?:\/\//i.test(apiBase)) {
+  apiBase = `https://${apiBase}`;
+}
 const out = path.join(__dirname, "..", "config.js");
 
 fs.writeFileSync(
