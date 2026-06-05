@@ -388,7 +388,7 @@ Not required if you configure everything in the Railway/Vercel dashboards, but u
 
 ### `Procfile` / `railway.toml` / `nixpacks.toml` (repo root)
 
-Already committed. Railway installs **`requirements-prod.txt`** (no PyTorch) and runs **1 uvicorn worker**.
+Already committed. `nixpacks.toml` sets `NIXPACKS_PYTHON_INSTALL_REQUIREMENTS=requirements-prod.txt` (no PyTorch) and runs **1 uvicorn worker**. Do not override Nixpacks install with a raw `pip install` command — that breaks the Python provider and causes `pip: command not found`.
 
 Bootstrap index once in Railway shell:
 

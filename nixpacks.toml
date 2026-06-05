@@ -1,9 +1,8 @@
-# Railway / Nixpacks — production image (no tests, no PyTorch)
-[phases.setup]
-nixPkgs = ["python311"]
-
-[phases.install]
-cmds = ["pip install -r requirements-prod.txt"]
+# Railway / Nixpacks — use built-in Python provider (pip included).
+# Do NOT override [phases.install] with bare "pip install" — that skips pip setup.
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
+NIXPACKS_PYTHON_INSTALL_REQUIREMENTS = "requirements-prod.txt"
 
 [start]
 cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
