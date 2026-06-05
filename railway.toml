@@ -3,7 +3,9 @@ builder = "nixpacks"
 nixpacksConfigPath = "nixpacks.toml"
 
 [deploy]
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
+
+# Set PORT=8080 in Railway Variables to match Public Networking target port.

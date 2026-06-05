@@ -491,6 +491,9 @@ async function checkHealth() {
   } catch {
     statusEl.textContent = "API offline";
     statusEl.className = "status-pill bad";
+    statusEl.title = API_BASE
+      ? `Cannot reach ${API_BASE}/api/health (check Railway port + CORS)`
+      : "Set VITE_API_BASE_URL on Vercel and redeploy";
   }
 }
 

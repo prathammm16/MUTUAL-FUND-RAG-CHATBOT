@@ -83,6 +83,11 @@ def create_app() -> FastAPI:
                     )
             return await call_next(request)
 
+    @app.get("/")
+    def root() -> dict[str, str]:
+        """Railway port / networking smoke check (no UI mount when SERVE_UI=false)."""
+        return {"status": "ok", "service": "groww-chatbot", "health": "/api/health"}
+
     app.include_router(api_router)
     if settings.serve_ui and _UI_DIR.is_dir():
         app.mount("/", StaticFiles(directory=str(_UI_DIR), html=True), name="ui")
