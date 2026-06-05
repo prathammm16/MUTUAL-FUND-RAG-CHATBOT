@@ -1,0 +1,7 @@
+{
+  "name": "hdfc-faq-ui",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-config.js"
+  }
+}

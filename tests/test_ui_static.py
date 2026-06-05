@@ -17,12 +17,14 @@ def test_ui_index_served() -> None:
     assert "new-chat-primary" in resp.text
     assert "sidebar-backdrop" in resp.text
     assert "Supported funds" in resp.text
+    assert "/config.js" in resp.text
     assert "/app.js" in resp.text
 
 
 def test_ui_assets() -> None:
     client = TestClient(create_app())
     assert client.get("/styles.css").status_code == 200
+    assert client.get("/config.js").status_code == 200
     assert client.get("/app.js").status_code == 200
     assert client.get("/assets/groww-logo.png").status_code == 200
 
