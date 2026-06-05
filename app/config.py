@@ -291,7 +291,7 @@ class Settings(BaseSettings):
 
     def resolved_cors_origins(self) -> list[str]:
         raw = (self.cors_origins or "").strip()
-        if raw:
+        if raw and raw != "*":
             return [o.strip() for o in raw.split(",") if o.strip()]
         if self.is_production:
             return [
@@ -304,6 +304,22 @@ class Settings(BaseSettings):
             "http://127.0.0.1:8000",
             "http://localhost:8000",
         ]
+
+    def resolved_cors_origin_regex(self) -> str | None:
+        """
+        Regex fallback for split deploy (Railway API + Vercel UI).
+
+        When ``SERVE_UI=false`` and ``CORS_ORIGINS`` is unset, allow any
+        ``*.vercel.app`` origin so the browser can reach the API.
+        """
+        raw = (self.cors_origins or "").strip()
+        if raw == "*":
+            return r"https?://.*"
+        if raw:
+            return None
+        if self.is_production and not self.serve_ui:
+            return r"https://.*\.vercel\.app"
+        return None
 
     @field_validator("amfi_education_url", "sebi_investor_url")
     @classmethod

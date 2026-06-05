@@ -114,7 +114,18 @@ class TestProdCors:
     def test_prod_default_cors_same_origin_only(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("APP_ENV", "production")
         monkeypatch.setenv("CORS_ORIGINS", "")
+        monkeypatch.setenv("SERVE_UI", "true")
         get_settings.cache_clear()
         origins = get_settings().resolved_cors_origins()
         assert "http://localhost:8000" in origins
         assert "http://localhost:5173" not in origins
+        assert get_settings().resolved_cors_origin_regex() is None
+
+    def test_prod_split_deploy_allows_vercel_regex(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("APP_ENV", "production")
+        monkeypatch.setenv("SERVE_UI", "false")
+        monkeypatch.setenv("CORS_ORIGINS", "")
+        get_settings.cache_clear()
+        assert get_settings().resolved_cors_origin_regex() == r"https://.*\.vercel\.app"
