@@ -119,7 +119,7 @@ class TestProdCors:
         origins = get_settings().resolved_cors_origins()
         assert "http://localhost:8000" in origins
         assert "http://localhost:5173" not in origins
-        assert get_settings().resolved_cors_origin_regex() is None
+        assert get_settings().resolved_cors_origin_regex() is not None
 
     def test_prod_split_deploy_allows_vercel_regex(
         self, monkeypatch: pytest.MonkeyPatch
@@ -128,4 +128,24 @@ class TestProdCors:
         monkeypatch.setenv("SERVE_UI", "false")
         monkeypatch.setenv("CORS_ORIGINS", "")
         get_settings.cache_clear()
-        assert get_settings().resolved_cors_origin_regex() == r"https://.*\.vercel\.app"
+        assert get_settings().resolved_cors_origin_regex() == (
+            r"https://([a-z0-9-]+\.)*vercel\.app"
+        )
+
+    def test_options_preflight_from_vercel(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("APP_ENV", "production")
+        monkeypatch.setenv("CHAT_RATE_LIMIT_PER_MINUTE", "0")
+        get_settings.cache_clear()
+        client = TestClient(create_app())
+        resp = client.options(
+            "/api/health",
+            headers={
+                "Origin": "https://mutual-fund-rag-chatbot.vercel.app",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+        assert resp.status_code == 200
+        assert (
+            resp.headers.get("access-control-allow-origin")
+            == "https://mutual-fund-rag-chatbot.vercel.app"
+        )

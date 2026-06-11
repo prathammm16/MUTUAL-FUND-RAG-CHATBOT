@@ -57,13 +57,16 @@ def create_app() -> FastAPI:
     )
 
     cors_regex = settings.resolved_cors_origin_regex()
+    cors_origins = settings.resolved_cors_origins()
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[] if cors_regex else settings.resolved_cors_origins(),
+        allow_origins=cors_origins,
         allow_origin_regex=cors_regex,
-        allow_credentials=True,
-        allow_methods=["*"],
+        allow_credentials=settings.cors_allow_credentials(),
+        allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
+        expose_headers=["*"],
+        max_age=600,
     )
 
     limit = settings.effective_chat_rate_limit_per_minute

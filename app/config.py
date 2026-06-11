@@ -307,19 +307,21 @@ class Settings(BaseSettings):
 
     def resolved_cors_origin_regex(self) -> str | None:
         """
-        Regex fallback for split deploy (Railway API + Vercel UI).
+        Regex for split deploy (Railway API + Vercel UI).
 
-        When ``SERVE_UI=false`` and ``CORS_ORIGINS`` is unset, allow any
-        ``*.vercel.app`` origin so the browser can reach the API.
+        In production always allow ``*.vercel.app`` so preview + production
+        Vercel URLs pass OPTIONS preflight (avoids 400 from browser).
         """
         raw = (self.cors_origins or "").strip()
         if raw == "*":
             return r"https?://.*"
-        if raw:
-            return None
-        if self.is_production and not self.serve_ui:
-            return r"https://.*\.vercel\.app"
+        if self.is_production:
+            return r"https://([a-z0-9-]+\.)*vercel\.app"
         return None
+
+    def cors_allow_credentials(self) -> bool:
+        """No cookie/session auth — keep false so cross-origin fetch works."""
+        return False
 
     @field_validator("amfi_education_url", "sebi_investor_url")
     @classmethod
