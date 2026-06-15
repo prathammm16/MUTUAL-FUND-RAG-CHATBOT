@@ -19,7 +19,9 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import router as api_router
 from app.config import get_settings
 from app.middleware.rate_limit import get_chat_rate_limiter
+from ingestion.bootstrap import bootstrap_index_if_needed
 from ingestion.embed import warmup_embedding_model
+from ingestion.index import collection_exists, resolve_index_dir, validate_indexed_store
 
 _UI_DIR = Path(__file__).resolve().parents[1] / "ui"
 
@@ -38,6 +40,12 @@ async def _lifespan(app: FastAPI):
             "Chat rate limit: %s requests/minute per client",
             settings.effective_chat_rate_limit_per_minute,
         )
+    if settings.is_production:
+        store = str(resolve_index_dir())
+        ready = collection_exists(store) and not validate_indexed_store(store)
+        if not ready:
+            logging.info("Production index missing or invalid — auto-bootstrap starting")
+            bootstrap_index_if_needed()
     if settings.preload_embedding_model:
         logging.info(
             "Preloading embedding model (backend=%s)",
