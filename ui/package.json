@@ -2,7 +2,7 @@
   "name": "hdfc-faq-ui",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": "20.x"
   },
   "scripts": {
     "build": "node scripts/build-config.js"

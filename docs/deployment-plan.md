@@ -11,6 +11,78 @@ Step-by-step guide to deploy the **HDFC Mutual Fund FAQ Assistant** with:
 
 ---
 
+## 0. Deploy from scratch (checklist)
+
+Use this order **Railway first → Vercel second**. Repo: `prathammm16/MUTUAL-FUND-RAG-CHATBOT`, branch `main`.
+
+### Before you start
+
+- [ ] Code pushed to GitHub (`main` up to date)
+- [ ] [Groq API key](https://console.groq.com) ready
+- [ ] Railway account (delete unused projects if you hit free-tier limits)
+- [ ] Vercel account linked to same GitHub
+
+### Part A — Railway (backend API)
+
+| Step | Action |
+|------|--------|
+| A1 | **+ New → New Project → Deploy from GitHub** → select `MUTUAL-FUND-RAG-CHATBOT` |
+| A2 | Confirm **one web service** is created (root `/`, Nixpacks uses `requirements-prod.txt`) |
+| A3 | **Variables** — copy from [`.env.production.example`](../.env.production.example) plus `PORT=8080` |
+| A4 | **Volumes → Add Volume** → mount `/app/vector_store` (matches `VECTOR_STORE_PATH`) |
+| A5 | **Settings → Networking → Generate Domain** → target port **`8080`** |
+| A6 | Wait for deploy **green** |
+| A7 | **Shell** → `python scripts/railway_bootstrap.py` (builds Chroma index) |
+| A8 | Browser test → `https://YOUR-RAILWAY-URL.up.railway.app/api/health` → `index_ready: true` |
+| A9 | Copy Railway URL (with `https://`) for Vercel |
+
+**Railway variables (minimum):**
+
+```text
+APP_ENV=production
+PORT=8080
+SERVE_UI=false
+EMBEDDING_BACKEND=fastembed
+GROQ_API_KEY=gsk_...
+VECTOR_STORE_PATH=/app/vector_store
+ADMIN_REINDEX_ENABLED=false
+```
+
+Optional: `CORS_ORIGINS=https://your-app.vercel.app` (auto-allows `*.vercel.app` when `SERVE_UI=false`).
+
+### Part B — Vercel (frontend UI)
+
+| Step | Action |
+|------|--------|
+| B1 | **Add New → Project** → import `MUTUAL-FUND-RAG-CHATBOT` |
+| B2 | **Root Directory:** `ui` (or repo root — root `vercel.json` builds `ui/` automatically) |
+| B3 | Framework: **Other** · Build: `npm run build` · Output: `.` |
+| B4 | **Environment variable:** `VITE_API_BASE_URL` = `https://YOUR-RAILWAY-URL.up.railway.app` (**must include `https://`**) |
+| B5 | Deploy |
+| B6 | Open `https://YOUR-VERCEL-APP.vercel.app/config.js` → must show Railway URL |
+| B7 | Hard refresh chat UI (Ctrl+Shift+R) → status **Index ready** |
+
+### Part C — Smoke test
+
+| # | Test | Pass |
+|---|------|------|
+| 1 | Railway `/api/health` | `index_ready: true` |
+| 2 | Vercel `/config.js` | full `https://` Railway URL |
+| 3 | Chat: expense ratio question | Answer + citation |
+| 4 | Advisory question | Refusal |
+
+### Common mistakes
+
+| Mistake | Symptom | Fix |
+|---------|---------|-----|
+| No Railway web service | No API at all | A1 — deploy repo from GitHub |
+| Wrong networking port | Railway URL returns **404** | `PORT=8080` + domain target port **8080** |
+| Missing `https://` in Vercel env | API offline | `VITE_API_BASE_URL=https://...` + redeploy |
+| Skipped bootstrap | Index degraded / chat 503 | A7 — `railway_bootstrap.py` |
+| Free tier full | Can't create project | Delete old Railway project or upgrade Hobby |
+
+---
+
 ## 1. Target architecture
 
 Locally, FastAPI serves both the API and `ui/` from one process. In production we **split** them:
